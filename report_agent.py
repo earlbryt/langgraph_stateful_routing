@@ -10,12 +10,12 @@ def save_report_tool(return_route:str):
         """
         print("Tool Call: save_report_tool", issue)
         
-        return "report is submited", {'current_route': return_route, 'reports': [issue]}
+        return "report is submitted", {'current_route': return_route, 'reports': [issue]}
 
     return tool_func
 
 
-report_agent_prompt = f"""ou are the assistant who receives a report about an issue. 
+report_agent_prompt = f"""You are the assistant who receives a report about an issue. 
 Ask the user to describe an issue. Once done use the tools available to save it.
 Example:
 User: My internet is very slow

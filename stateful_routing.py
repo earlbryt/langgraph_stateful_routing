@@ -7,11 +7,11 @@ from greeting_agent import greeting_agent_prompt, redirect_tool
 from sign_up_agent import sign_up_prompt, sign_up_tool
 from report_agent import report_agent_prompt, save_report_tool
 from langgraph.graph import MessagesState
-
+from langgraph.prebuilt import create_react_agent
 
 GREETING_AGENT = "Greeting_Agent"
 REPORT_AGENT = "Report_Agent"
-SIGN_UP_AGENT = "Sign_up_agent"
+SIGN_UP_AGENT = "Sign_up_Agent"
 
 # Define the agent state to track the conversation
 class AgentState(MessagesState):
@@ -21,7 +21,7 @@ class AgentState(MessagesState):
     email: str
     reports: list[str]
 
-# Routs to the last agent.
+# Routs to the last used agent.
 def pre_greeting_routing (default_route: str):
     def routing (state:AgentState) -> str :
         # Route to the last used agent, if it exists in the state
@@ -34,19 +34,21 @@ def pre_greeting_routing (default_route: str):
     
     return routing
 
-# Routes to a selected agent.
+# Routes to a new selected agent.
 def post_greeting_routing (default_route: str):
     def routing (state:AgentState) -> str :
+        # if current agent is greeting, route to the END
         if 'current_route' not in state or state['current_route'] == GREETING_AGENT:
             return default_route
         elif 'current_route' in state and state['current_route']:
             print("Routing to " + state['current_route'])
             return state['current_route']
-       
+
     return routing
 
 llm = ChatOpenAI(model="gpt-4o")
 
+sign_up_agent = create_react_agent(llm, sign_up_prompt, SIGN_UP_AGENT, [sign_up_tool(GREETING_AGENT)])
 sign_up_agent = create_tool_calling_agent(llm, sign_up_prompt, SIGN_UP_AGENT, [sign_up_tool(GREETING_AGENT)])
 report_agent = create_tool_calling_agent(llm, report_agent_prompt, REPORT_AGENT, [save_report_tool(GREETING_AGENT)])
 greeting_agent = create_tool_calling_agent(llm, greeting_agent_prompt(
@@ -71,10 +73,10 @@ builder.add_conditional_edges(
 
 builder.add_node(SIGN_UP_AGENT, sign_up_agent)
 builder.add_node(REPORT_AGENT, report_agent)
+builder.add_edge(SIGN_UP_AGENT, END)
+builder.add_edge(REPORT_AGENT, END)
 
 memory = MemorySaver()
 # Compile graph
 graph = builder.compile(checkpointer=memory)
 
-# from IPython.display import Image, display
-# display(Image(graph.get_graph().draw_mermaid_png()))

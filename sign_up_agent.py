@@ -28,4 +28,3 @@ sign_up_prompt = f"""
 You are the assistant that signs up a user. 
 You need to collect user name, last name, and email and save it using tools
 """
- 
