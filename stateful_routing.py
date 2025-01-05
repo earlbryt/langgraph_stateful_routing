@@ -1,5 +1,5 @@
 from typing import Annotated
-from langchain_openai import ChatOpenAI
+from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, END, START
 from langgraph.checkpoint.memory import MemorySaver
 from create_agent import create_tool_calling_agent
@@ -13,6 +13,7 @@ GREETING_AGENT = "Greeting_Agent"
 REPORT_AGENT = "Report_Agent"
 SIGN_UP_AGENT = "Sign_up_Agent"
 
+
 # Define the agent state to track the conversation
 class AgentState(MessagesState):
     current_route: str
@@ -21,7 +22,7 @@ class AgentState(MessagesState):
     email: str
     reports: list[str]
 
-# Routs to the last used agent.
+# Routes to the last used agent.
 def pre_greeting_routing (default_route: str):
     def routing (state:AgentState) -> str :
         # Route to the last used agent, if it exists in the state
@@ -46,7 +47,7 @@ def post_greeting_routing (default_route: str):
 
     return routing
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatGroq(model="llama3-8b-8192")
 
 sign_up_agent = create_react_agent(llm, sign_up_prompt, SIGN_UP_AGENT, [sign_up_tool(GREETING_AGENT)])
 sign_up_agent = create_tool_calling_agent(llm, sign_up_prompt, SIGN_UP_AGENT, [sign_up_tool(GREETING_AGENT)])
